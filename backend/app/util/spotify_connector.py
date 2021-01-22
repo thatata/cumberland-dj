@@ -12,6 +12,12 @@ class SpotifyConnector:
         self.client_secret = 'XXXX'
         client_credentials_manager = SpotifyClientCredentials(client_id=self.client_id, client_secret=self.client_secret)
         self.sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        self.supported_types = ['track', 'artist', 'album']
+
+    def get_supported_types(self):
+        return {
+            'types': self.supported_types
+        }
 
     def search(self, query_string, query_type='track'):
         if not query_string:
