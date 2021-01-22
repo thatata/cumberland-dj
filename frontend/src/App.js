@@ -40,8 +40,9 @@ class DropDown extends React.Component {
     }
 
     componentDidMount () {
-        axios.get('/test')
+        axios.get('http://localhost:5000/supported-types')
             .then((resp) => {
+                console.log(resp.data);
                 this.setState({
                     data: resp.data,
                 });

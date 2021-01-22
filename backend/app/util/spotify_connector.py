@@ -1,3 +1,4 @@
+import os
 import json
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -8,8 +9,8 @@ from app.model.album import Album
 
 class SpotifyConnector:
     def __init__(self):
-        self.client_id = 'XXXX'
-        self.client_secret = 'XXXX'
+        self.client_id = os.environ.get('CLIENT_ID', None)
+        self.client_secret = os.environ.get('CLIENT_SECRET', None)
         client_credentials_manager = SpotifyClientCredentials(client_id=self.client_id, client_secret=self.client_secret)
         self.sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
         self.supported_types = ['track', 'artist', 'album']
