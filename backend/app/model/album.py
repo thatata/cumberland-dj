@@ -18,3 +18,11 @@ class Album(SpotifyObject):
 
         if 'artists' in response and len(response['artists']):
             self.artists = [Artist(r) for r in response['artists']]
+
+    def to_json(self):
+        return {
+            'title': self.name,
+            'uri': self.uri,
+            'image_url': self.image_url,
+            'artist': ', '.join([a.name for a in self.artists])
+        }

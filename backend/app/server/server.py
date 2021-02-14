@@ -17,6 +17,11 @@ def search(query_type, query_string):
     return sp.search(query_string, query_type)
 
 
+@app.route('/playlist/<playlist_id>')
+def playlist(playlist_id):
+    return sp.get_playlist(playlist_id)
+
+
 @app.route('/supported-types')
 def get_supported_types():
     return sp.get_supported_types()

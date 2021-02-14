@@ -20,3 +20,12 @@ class Track(SpotifyObject):
 
         if 'artists' in response and len(response['artists']):
             self.artists = [Artist(r) for r in response['artists']]
+
+    def to_json(self):
+        return {
+            'title': self.name,
+            'uri': self.uri,
+            'album': self.album.name,
+            'artist': ', '.join([a.name for a in self.artists]),
+            'image_url': self.album.image_url,
+        }
