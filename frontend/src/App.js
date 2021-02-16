@@ -30,9 +30,9 @@ class SearchBar extends React.Component {
                 <form>
                   <div className="search-bar rounded-pill shadow-sm">
                     <div className="input-group">
-                      <input id="search-bar-input" type="search" className="form-control border-0 search-bar" placeholder="Search" value={this.state.value} onChange={this.handleChange} onfocus="blur();"></input>
-                      <div class="input-group-append">
-                        <button type="submit" className="btn btn-link text-primary" onClick={(e) => this.handleClick(e)}><i class="fa fa-search"></i></button>
+                      <input id="search-bar-input" type="search" className="form-control border-0 search-bar" placeholder="Search" value={this.state.value} onChange={this.handleChange}></input>
+                      <div className="input-group-append">
+                        <button type="submit" className="btn btn-link text-primary" onClick={(e) => this.handleClick(e)}><i className="fa fa-search"></i></button>
                       </div>
                     </div>
                   </div>
@@ -116,19 +116,19 @@ class Queue extends React.Component {
                       <td className="row-detail">
                       {value.title &&
                         <div>
-                            <h7 key='title'>TITLE</h7>
+                            TITLE
                             <h6 key={value.title}>{value.title}</h6>
                         </div>
                       }
                       {value.artist &&
                         <div>
-                            <h7 key='artist'>ARTIST</h7>
+                            ARTIST
                             <h6 key={value.artist}>{value.artist}</h6>
                         </div>
                       }
                       {value.name &&
                         <div>
-                            <h7 key='name'>NAME</h7>
+                            NAME
                             <h6 key={value.name}>{value.name}</h6>
                         </div>
                       }
@@ -179,103 +179,63 @@ class SearchPage extends React.Component {
                 query: '',
                 data: [],
             },
-            loading: false,
+            isAuthorizing: false,
+            showSpinner: false,
+        });
+
+        // add listener for authorization
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && this.state.isAuthorizing) {
+                window.location.reload(false);
+            }
+        });
+    }
+
+    isAuthorizing() {
+        this.setState(state => {
+            state.isAuthorizing = true;
+            return state;
         });
     }
 
     dropdownSelected(searchType) {
-        this.setState({
-            queue: {
-                data: this.state.queue.data,
-            },
-            navbar: {
-                types: this.state.navbar.types,
-                selectedType: searchType,
-            },
-            results: {
-                query: this.state.results.query,
-                data: this.state.results.data,
-                hideQueue: this.state.results.hideQueue,
-            },
-            loading: this.state.loading,
+        this.setState(state => {
+            state.navbar.selectedType = searchType;
+            return state;
         });
     }
 
     componentDidUpdate() {
         if (this.state.results.isSearch) {
             document.getElementById('search-bar-input').blur();
-            document.getElementsByClassName('search-results')[0].scrollIntoView({behavior: 'smooth'});
-            this.setState({
-                queue: {
-                    data: this.state.queue.data,
-                },
-                navbar: {
-                    types: this.state.navbar.types,
-                    selectedType: this.state.navbar.selectedType,
-                },
-                results: {
-                    query: this.state.results.query,
-                    data: this.state.results.data,
-                    hideQueue: true,
-                },
-                loading: this.state.loading,
+            this.setState(state => {
+                state.results.hideQueue = true;
+                state.results.isSearch = false;
+                return state;
             });
         }
     }
 
-    componentDidMount () {
+    async componentDidMount () {
         // make request for current playlist & supported types
-        const playlistReq = axios.get('/playlist/5CndgBCSao2SMmq3Dj9o6S');
+        const playlistReq = axios.get('/playlist/37MEntIxfNQGXLDl6hC9b3');
         const supportedTypesReq = axios.get('/supported-types');
+        const authorizeUrlReq = axios.get('/get-authorization-url')
 
-        axios.all([playlistReq, supportedTypesReq]).then(axios.spread((...responses) => {
-            const playlistResp = responses[0]
-            const supportedTypesResp = responses[1]
-
-            this.setState({
-                queue: {
-                    data: playlistResp.data,
-                },
-                navbar: {
-                    types: supportedTypesResp.data.types,
-                    selectedType: '',
-                },
-                results: {
-                    query: '',
-                    data: [],
-                },
-                loading: false,
+        try {
+            const [playlistData, supportedTypesData, authorizedUrlData] = await axios.all([playlistReq, supportedTypesReq, authorizeUrlReq]);
+            this.setState(state => {
+                state.authUrl = authorizedUrlData.data;
+                state.queue.data = playlistData.data;
+                state.navbar.types = supportedTypesData.data.types;
+                return state;
             });
-        })).catch(errors => {
+        } catch (errors) {
             alert('error! ' + errors);
-        });
+        }
     }
 
-    changeSpinner() {
-        const loading = this.state.loading;
-        const opacity = loading ? 1 : 0.5;
-        const visibility = loading ? 'hidden' : 'visible';
-
-        document.getElementsByClassName('row')[0].style.opacity = opacity;
-        document.getElementsByClassName('spinner-border')[0].style.visibility = visibility;
-
-        this.setState({
-            queue: {
-                data: this.state.queue.data,
-            },
-            navbar: {
-                types: this.state.navbar.types,
-                selectedType: this.state.navbar.selectedType,
-            },
-            results: {
-                query: this.state.results.query,
-                data: this.state.results.data,
-            },
-            loading: !loading,
-        });
-    }
-
-    search(queryString) {
+    async search(queryString) {
         if (!this.state.navbar.selectedType) {
             alert('Need to set type!');
             return;
@@ -283,71 +243,67 @@ class SearchPage extends React.Component {
             alert('Your search is empty!');
             return;
         }
-        this.changeSpinner();
-        const url = ['/search/', this.state.navbar.selectedType.toLowerCase(), '/', queryString].join('');
-        axios.get(url).then((resp) => {
-            this.changeSpinner();
-            this.setState({
-                queue: {
-                    data: this.state.queue.data,
-                },
-                navbar: {
-                    types: this.state.navbar.types,
-                    selectedType: this.state.navbar.selectedType,
-                },
-                results: {
-                    query: queryString,
-                    data: resp.data,
-                    isSearch: true,
-                },
-            });
-        }).catch(errors => {
-            console.log(errors);
-            alert('Error! ' + errors);
-            this.changeSpinner();
+
+        this.setState(state => {
+            state.showSpinner = true;
+            return state;
         });
+
+        const url = ['/search/', this.state.navbar.selectedType.toLowerCase(), '/', queryString].join('');
+        try {
+            const searchData = await axios.get(url);
+            this.setState(state => {
+                state.results.query = queryString;
+                state.results.data = searchData.data;
+                state.results.isSearch = true;
+                state.showSpinner = false;
+                return state;
+            });
+        } catch (errors) {
+            alert('Error! ' + errors);
+            this.setState(state => {
+                state.showSpinner = false;
+                return state;
+            });
+        }
     }
 
     render() {
         return (
-            <div className="container">
+            <div className="container" style={{opacity: this.state.showSpinner ? 0.5 : 1}}>
                 <NavBar
                     data={this.state.navbar}
                     dropdownSelected={(searchType) => this.dropdownSelected(searchType)}
                     onClick={(query, searchType) => this.search(query, searchType)}
                 />
+                {this.state.authUrl &&
+                    <a className="btn btn-secondary" href={this.state.authUrl} onClick={() => this.isAuthorizing()} target="_blank" rel="noreferrer">Login to Spotify</a>
+                }
+                {!this.state.authUrl &&
                 <div className="row">
-                    <Spinner />
+                    <div className="spinner-border" style={{visibility: this.state.showSpinner ? 'visible' : 'hidden'}} role="status">
+                      <span className="sr-only">Loading...</span>
+                    </div>
                     <img id="playlist-image" className="img-fluid" src={this.state.queue.data.image_url} alt=""/>
                     <div className="song-info">
-                        <h7>PLAYLIST</h7>
+                        PLAYLIST
                         <h6>{this.state.queue.data.name}</h6>
-                        <h7>NOW PLAYING</h7>
+                        NOW PLAYING
                         <h6>now playing</h6>
-                        <h7>UP NEXT</h7>
+                        UP NEXT
                         <h6>up next</h6>
                     </div>
                     {!this.state.results.hideQueue &&
                     <Queue
-                        loading={this.state.loading}
                         data={this.state.queue.data}
                     />
                     }
                 </div>
+                }
                 <SearchResults
                     query={this.state.results.query}
                     data={this.state.results.data}
                 />
-            </div>
-        );
-    }
-}
-
-class Spinner extends React.Component {
-    render() {
-        return (
-            <div className="spinner-border" style={{visibility: this.props.hidden}} role="status">
-              <span className="sr-only">Loading...</span>
             </div>
         );
     }

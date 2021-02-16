@@ -1,4 +1,5 @@
-from flask import Flask
+import os
+from flask import Flask, request
 from flask_cors import CORS
 from app.util.spotify_connector import SpotifyConnector
 
@@ -8,7 +9,15 @@ sp = SpotifyConnector()
 
 
 @app.route('/')
-def hello_world():
+def empty_route():
+    if not sp.token_info:
+        url = request.url
+        code = sp.sp_oauth.parse_response_code(url)
+        if code != url:
+            print("Found Spotify auth code in Request URL! Trying to get valid access token...")
+            token_info = sp.sp_oauth.get_access_token(code)
+            sp.process_token(token_info)
+            return '<div style="font-size: 3rem;">Authorized!<script>window.close();</script></div>'
     return 'Hello World'
 
 
@@ -22,6 +31,21 @@ def playlist(playlist_id):
     return sp.get_playlist(playlist_id)
 
 
+@app.route('/get-authorization-url')
+def get_authorization_url():
+    return sp.get_authorization_url()
+
+
 @app.route('/supported-types')
 def get_supported_types():
     return sp.get_supported_types()
+
+
+@app.route('/clear-access-token')
+def clear_access_token():
+    global sp
+    if os.path.exists(sp.cache_location):
+        os.remove(sp.cache_location)
+    sp = SpotifyConnector()
+    return 'Cleared'
+

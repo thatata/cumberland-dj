@@ -1,7 +1,6 @@
 import os
-import json
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy import oauth2
 from app.model.artist import Artist
 from app.model.track import Track
 from app.model.album import Album
@@ -12,9 +11,41 @@ class SpotifyConnector:
     def __init__(self):
         self.client_id = os.environ.get('CLIENT_ID', None)
         self.client_secret = os.environ.get('CLIENT_SECRET', None)
-        client_credentials_manager = SpotifyClientCredentials(client_id=self.client_id, client_secret=self.client_secret)
-        self.sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        self.redirect_uri = os.environ.get('REDIRECT_URI', None)
+        self.cache_location = os.environ.get('CACHE_LOCATION', None)
         self.supported_types = ['track', 'artist', 'album']
+        self.token_info = None
+        self.sp = None
+        self.user_info = None
+        self.sp_oauth = oauth2.SpotifyOAuth(self.client_id, self.client_secret, self.redirect_uri,
+                                            scope='playlist-modify-public', cache_path=self.cache_location)
+        token_info = self.sp_oauth.get_cached_token()
+        if token_info:
+            print('found cached access token!')
+            self.process_token(token_info)
+
+    def get_authorization_url(self):
+        if not self.token_info:
+            return self.sp_oauth.get_authorize_url()
+        else:
+            return ''
+
+    def process_token(self, token_info):
+        try:
+            # refresh token if current expired
+            if self.sp_oauth.is_token_expired(token_info):
+                refreshed_token_info = self.sp_oauth.refresh_access_token(token_info['refresh_token'])
+                if self.sp_oauth.is_token_expired(refreshed_token_info):
+                    print('refresh failed!')
+                    return
+                self.token_info = refreshed_token_info
+            else:
+                self.token_info = token_info
+            self.sp = spotipy.Spotify(self.token_info['access_token'])
+            self.user_info = self.sp.current_user()
+        except spotipy.SpotifyException as e:
+            print('error processing token! ' + str(e))
+            return
 
     def get_supported_types(self):
         return {
@@ -24,6 +55,9 @@ class SpotifyConnector:
     def get_playlist(self, playlist_id):
         if not playlist_id:
             print('ERROR EMPTY PLAYLIST ID')
+            return {}
+        elif not self.sp:
+            print('ERROR SPOTIPY NOT SET UP')
             return {}
 
         try:
@@ -39,6 +73,9 @@ class SpotifyConnector:
             return {}
         elif query_type not in self.supported_types:
             print('ERROR UNSUPPORTED QUERY TYPE')
+            return {}
+        elif not self.sp:
+            print('ERROR SPOTIPY NOT SET UP')
             return {}
 
         response = None

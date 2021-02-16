@@ -22,6 +22,8 @@ services:
       networks:
          - frontend
          - backend
+      volumes:
+         - ./backend:/app
 networks:
    frontend:
       driver: bridge
