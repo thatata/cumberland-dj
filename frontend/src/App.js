@@ -1,6 +1,9 @@
 import React from 'react';
-import './App.css';
 import axios from 'axios';
+import './App.css';
+import $ from 'jquery';
+window.$ = $;
+window.jQuery = $;
 
 class SearchBar extends React.Component {
     constructor(props) {
@@ -101,6 +104,13 @@ class Queue extends React.Component {
         } else {
             rows = [];
         }
+
+        let onClick;
+        if (this.props.onClick) {
+            onClick = this.props.onClick;
+        } else {
+            onClick = () => {}
+        }
         return (
         <div id="queue" className="table-responsive">
           <div id="queue-table">
@@ -109,7 +119,7 @@ class Queue extends React.Component {
                 {rows.length > 0 &&
                     rows.map((value, index) => {
                     return (
-                    <tr key={index}>
+                    <tr key={index} onClick={() => onClick(index)}>
                       <td className="row-image">
                         <img className="img-test img-fluid" src={value.image_url} alt=""/>
                       </td>
@@ -117,7 +127,12 @@ class Queue extends React.Component {
                       {value.title &&
                         <div>
                             TITLE
-                            <h6 key={value.title}>{value.title}</h6>
+                            <h6 key={value.title}>
+                            {value.title}
+                            {value.explicit &&
+                                <div className="explicit-img">&#127348;</div>
+                            }
+                            </h6>
                         </div>
                       }
                       {value.artist &&
@@ -155,6 +170,7 @@ class SearchResults extends React.Component {
                     </div>
                     <Queue
                         data={this.props.data}
+                        onClick={(trackId) => this.props.onClick(trackId)}
                     />
                 </div>
             );
@@ -181,6 +197,7 @@ class SearchPage extends React.Component {
             },
             isAuthorizing: false,
             showSpinner: false,
+            playlist: '37MEntIxfNQGXLDl6hC9b3',
         });
 
         // add listener for authorization
@@ -218,7 +235,7 @@ class SearchPage extends React.Component {
 
     async componentDidMount () {
         // make request for current playlist & supported types
-        const playlistReq = axios.get('/playlist/37MEntIxfNQGXLDl6hC9b3');
+        const playlistReq = axios.get('/playlist/' + this.state.playlist);
         const supportedTypesReq = axios.get('/supported-types');
         const authorizeUrlReq = axios.get('/get-authorization-url')
 
@@ -268,6 +285,52 @@ class SearchPage extends React.Component {
         }
     }
 
+    async addTrack(trackId) {
+        if (trackId < 0 || trackId >= this.state.results.data.rows.length ||
+            !this.state.results.data || !this.state.results.data.rows) {
+            alert('Invalid track id or no search results!');
+            return;
+        }
+
+        const trackUri = this.state.results.data.rows[trackId].uri;
+        var trackExists = false;
+        this.state.queue.data.rows.forEach((row) => {
+            if (trackUri === row.uri) {
+                alert('Track already exists in the queue!')
+                trackExists = true;
+            }
+        });
+
+        if (trackExists) return;
+        this.setState(state => {
+            state.showSpinner = true;
+            return state;
+        });
+
+        const url = ['/add/', this.state.playlist, '/', trackUri].join('');
+        try {
+            const addTrackResp = await axios.get(url);
+            this.setState(state => {
+                state.queue.data = addTrackResp.data;
+                state.results.query = '';
+                state.results.data = [];
+                state.results.isSearch = false;
+                state.results.hideQueue = false;
+                state.showSpinner = false;
+                return state;
+            });
+            $("#success-alert").fadeTo(2000, 500).slideUp(500, function(){
+                $("#success-alert").slideUp(1000);
+            });
+        } catch (errors) {
+            alert('Error! ' + errors);
+            this.setState(state => {
+                state.showSpinner = false;
+                return state;
+            });
+        }
+    }
+
     render() {
         return (
             <div className="container" style={{opacity: this.state.showSpinner ? 0.5 : 1}}>
@@ -293,6 +356,10 @@ class SearchPage extends React.Component {
                         UP NEXT
                         <h6>up next</h6>
                     </div>
+                    <div class="alert alert-success" id="success-alert">
+                      <button type="button" class="close" data-dismiss="alert">x</button>
+                      Track added to the queue!
+                    </div>
                     {!this.state.results.hideQueue &&
                     <Queue
                         data={this.state.queue.data}
@@ -303,6 +370,7 @@ class SearchPage extends React.Component {
                 <SearchResults
                     query={this.state.results.query}
                     data={this.state.results.data}
+                    onClick={(trackId) => this.addTrack(trackId)}
                 />
             </div>
         );

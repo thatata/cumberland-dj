@@ -7,6 +7,7 @@ class Track(SpotifyObject):
     type = 'track'
     album = dict()
     artists = []
+    explicit = False
 
     def __init__(self, response):
         self.parse_response(response)
@@ -14,6 +15,7 @@ class Track(SpotifyObject):
     def parse_response(self, response):
         self.name = response.get('name', None)
         self.uri = response.get('uri', None)
+        self.explicit = response.get('explicit', False)
 
         if 'album' in response:
             self.album = Album(response['album'])
@@ -28,4 +30,5 @@ class Track(SpotifyObject):
             'album': self.album.name,
             'artist': ', '.join([a.name for a in self.artists]),
             'image_url': self.album.image_url,
+            'explicit': self.explicit,
         }

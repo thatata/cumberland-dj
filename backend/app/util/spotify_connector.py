@@ -96,3 +96,14 @@ class SpotifyConnector:
             print('EXCEPTION WITH SPOTIPY CALL {}'.format(e))
             print('RESPONSE: {}'.format(response))
             return {}
+
+    def add_track(self, playlist_id, track_uri):
+        response = None
+        try:
+            # first add track to playlist, then get updated playlist
+            response = self.sp.playlist_add_items(playlist_id, [track_uri])
+            return self.get_playlist(playlist_id)
+        except spotipy.SpotifyException as e:
+            print('EXCEPTION WITH SPOTIPY CALL {}'.format(e))
+            print('RESPONSE: {}'.format(response))
+            return {}

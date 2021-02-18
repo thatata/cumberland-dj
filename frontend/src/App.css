@@ -148,3 +148,16 @@ h6 {
     padding-left: 15px;
     padding-right: 15px;
 }
+
+#success-alert {
+    width: 100%;
+    margin-top: .3rem;
+    margin-bottom: 0;
+    font-size: 1rem;
+    display: none;
+}
+
+.explicit-img {
+    display: inline-block;
+    margin-left: .3rem;
+}

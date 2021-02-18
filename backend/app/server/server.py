@@ -31,6 +31,11 @@ def playlist(playlist_id):
     return sp.get_playlist(playlist_id)
 
 
+@app.route('/add/<playlist_id>/<track_uri>')
+def add_track(playlist_id, track_uri):
+    return sp.add_track(playlist_id, track_uri)
+
+
 @app.route('/get-authorization-url')
 def get_authorization_url():
     return sp.get_authorization_url()
