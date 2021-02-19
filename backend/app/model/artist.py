@@ -18,5 +18,6 @@ class Artist(SpotifyObject):
         return {
             'name': self.name,
             'uri': self.uri,
-            'image_url': self.image_url
+            'image_url': self.image_url,
+            'type': self.type
         }

@@ -121,7 +121,7 @@ class Queue extends React.Component {
                     return (
                     <tr key={index} onClick={() => onClick(index)}>
                       <td className="row-image">
-                        <img className="img-test img-fluid" src={value.image_url} alt=""/>
+                        <img className="content-img" src={value.image_url} alt=""/>
                       </td>
                       <td className="row-detail">
                       {value.title &&
@@ -162,15 +162,20 @@ class Queue extends React.Component {
 
 class SearchResults extends React.Component {
     render() {
-        if (this.props.query) {
+        if (this.props.data.prompt) {
+            if (this.props.data.album) {
+                this.props.data.rows.forEach((row) => {
+                    row.image_url = this.props.data.album.image_url;
+                });
+            }
             return (
                 <div className="row">
                     <div className="search-results">
-                        <h6>Search results for &quot;{this.props.query}&quot;</h6>
+                        <h6>{this.props.data.prompt}</h6>
                     </div>
                     <Queue
                         data={this.props.data}
-                        onClick={(trackId) => this.props.onClick(trackId)}
+                        onClick={(itemId) => this.props.onClick(itemId)}
                     />
                 </div>
             );
@@ -192,8 +197,9 @@ class SearchPage extends React.Component {
                 selectedType: '',
             },
             results: {
-                query: '',
-                data: [],
+                data: {},
+                isSearch: false,
+                hideQueue: false,
             },
             isAuthorizing: false,
             showSpinner: false,
@@ -269,8 +275,8 @@ class SearchPage extends React.Component {
         const url = ['/search/', this.state.navbar.selectedType.toLowerCase(), '/', queryString].join('');
         try {
             const searchData = await axios.get(url);
+            $('.navbar-toggler').click();
             this.setState(state => {
-                state.results.query = queryString;
                 state.results.data = searchData.data;
                 state.results.isSearch = true;
                 state.showSpinner = false;
@@ -285,17 +291,83 @@ class SearchPage extends React.Component {
         }
     }
 
-    async addTrack(trackId) {
-        if (trackId < 0 || trackId >= this.state.results.data.rows.length ||
+    async processItem(itemId) {
+        if (itemId < 0 || itemId >= this.state.results.data.rows.length ||
             !this.state.results.data || !this.state.results.data.rows) {
-            alert('Invalid track id or no search results!');
+            alert('Invalid item id or no search results!');
             return;
         }
 
-        const trackUri = this.state.results.data.rows[trackId].uri;
+        const item = this.state.results.data.rows[itemId];
+        switch(item.type) {
+            case 'track':
+                this.addTrack(item.uri);
+                break;
+            case 'album':
+                this.getAlbum(item);
+                break;
+            case 'artist':
+                this.getTopArtistTracks(item);
+                break;
+            default:
+                alert('Unknown type selected!');
+                break;
+        }
+    }
+
+    async getAlbum(item) {
+        this.setState(state => {
+            state.showSpinner = true;
+            return state;
+        });
+
+        try {
+            const getAlbumResp = await axios.get('/album/' + item.uri);
+            $('tr').get(0).scrollIntoView({behavior: 'smooth'});
+            this.setState(state => {
+                state.results.data = getAlbumResp.data;
+                state.results.data.prompt = 'Showing tracks from album ' + item.title;
+                state.results.data.album = item;
+                state.showSpinner = false;
+                return state;
+            });
+        } catch (errors) {
+            alert('Error! ' + errors);
+            this.setState(state => {
+                state.showSpinner = false;
+                return state;
+            });
+        }
+    }
+
+    async getTopArtistTracks(item) {
+        this.setState(state => {
+            state.showSpinner = true;
+            return state;
+        });
+
+        try {
+            const getArtistResp = await axios.get('/artist/' + item.uri);
+            $('tr').get(0).scrollIntoView({behavior: 'smooth'});
+            this.setState(state => {
+                state.results.data = getArtistResp.data;
+                state.results.data.prompt = 'Showing top tracks for artist ' + item.name;
+                state.showSpinner = false;
+                return state;
+            });
+        } catch (errors) {
+            alert('Error! ' + errors);
+            this.setState(state => {
+                state.showSpinner = false;
+                return state;
+            });
+        }
+    }
+
+    async addTrack(uri) {
         var trackExists = false;
         this.state.queue.data.rows.forEach((row) => {
-            if (trackUri === row.uri) {
+            if (uri === row.uri) {
                 alert('Track already exists in the queue!')
                 trackExists = true;
             }
@@ -307,13 +379,12 @@ class SearchPage extends React.Component {
             return state;
         });
 
-        const url = ['/add/', this.state.playlist, '/', trackUri].join('');
+        const url = ['/add/', this.state.playlist, '/', uri].join('');
         try {
             const addTrackResp = await axios.get(url);
             this.setState(state => {
                 state.queue.data = addTrackResp.data;
-                state.results.query = '';
-                state.results.data = [];
+                state.results.data = {};
                 state.results.isSearch = false;
                 state.results.hideQueue = false;
                 state.showSpinner = false;
@@ -368,9 +439,8 @@ class SearchPage extends React.Component {
                 </div>
                 }
                 <SearchResults
-                    query={this.state.results.query}
                     data={this.state.results.data}
-                    onClick={(trackId) => this.addTrack(trackId)}
+                    onClick={(itemId) => this.processItem(itemId)}
                 />
             </div>
         );

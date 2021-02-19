@@ -12,12 +12,13 @@ Copy the `.env.tpl` file and name it `.env`. Fill all the environmental variable
 docker-compose up
 ```
 
-Frontend is set up for hot-reload, so any changes made while app is running will automatically re-render the frontend
-
-Backend changes require re-building the application using the following command:
+Any changes to node modules or Python packages will require a fresh build:
 ```sh
-docker-compose build
+docker-compose down
+docker-compose up --build
 ```
+
+Hot reload is enabled for both the backend & frontend, so no need to create a fresh build for every change!
 
 ### Testing
 TODO

@@ -46,6 +46,16 @@ def get_supported_types():
     return sp.get_supported_types()
 
 
+@app.route('/album/<album_id>')
+def album(album_id):
+    return sp.get_album(album_id)
+
+
+@app.route('/artist/<artist_id>')
+def artist_tracks(artist_id):
+    return sp.get_artist_tracks(artist_id)
+
+
 @app.route('/clear-access-token')
 def clear_access_token():
     global sp

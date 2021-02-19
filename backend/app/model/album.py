@@ -24,5 +24,6 @@ class Album(SpotifyObject):
             'title': self.name,
             'uri': self.uri,
             'image_url': self.image_url,
-            'artist': ', '.join([a.name for a in self.artists])
+            'artist': ', '.join([a.name for a in self.artists]),
+            'type': self.type
         }

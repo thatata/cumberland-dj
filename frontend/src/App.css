@@ -56,11 +56,6 @@
     margin-bottom: .5rem;
 }
 
-.img-test {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-}
-
 #queue-table {
     height: 28rem;
     overflow-y: auto;
@@ -74,11 +69,9 @@ th {
 }
 
 #playlist-image {
-    padding-left: .5rem;
-    padding-top: .5rem;
     width: 7.5rem;
     height: 7.5rem;
-    margin-left: .5rem;
+    margin-left: 1rem;
 }
 
 .navbar {
@@ -112,15 +105,22 @@ h6 {
     text-overflow: ellipsis;
 }
 
+.content-img {
+    width: 5rem;
+}
+
 .row-detail h6 {
     text-overflow: ellipsis;
 }
 
+.row-detail {
+    padding: .5rem 0 .5rem 1rem !important;
+}
+
 .row-image {
-    padding-top: .5rem !important;
-    padding-bottom: .5rem !important;
-    padding-left: 0 !important;
     width: 5rem;
+    padding: .5rem 0 .5rem 0 !important;
+    vertical-align: middle !important;
 }
 
 .song-info {

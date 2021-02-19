@@ -5,7 +5,7 @@ from app.model.artist import Artist
 
 class Track(SpotifyObject):
     type = 'track'
-    album = dict()
+    album = None
     artists = []
     explicit = False
 
@@ -27,8 +27,9 @@ class Track(SpotifyObject):
         return {
             'title': self.name,
             'uri': self.uri,
-            'album': self.album.name,
+            'album': self.album.name if self.album else '',
             'artist': ', '.join([a.name for a in self.artists]),
-            'image_url': self.album.image_url,
+            'image_url': self.album.image_url if self.album else '',
             'explicit': self.explicit,
+            'type': self.type
         }
