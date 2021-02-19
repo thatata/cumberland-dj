@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+*.ipynb
+.idea/
+node_modules/
+.eslintcache
+.spotipyoauthcache

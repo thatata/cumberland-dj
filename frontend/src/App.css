@@ -1,0 +1,163 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.input-group {
+    padding: .3rem;
+}
+
+#search-spotify {
+    border-top-left-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+}
+
+.navbar {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    background-color: #42bd2f;
+}
+
+.img-fluid {
+    margin-bottom: .5rem;
+}
+
+#queue-table {
+    height: 28rem;
+    overflow-y: auto;
+}
+
+th {
+    background: white;
+    position: sticky;
+    top: 0;
+    border-top: 0 !important;
+}
+
+#playlist-image {
+    width: 7.5rem;
+    height: 7.5rem;
+    margin-left: 1rem;
+}
+
+.navbar {
+    margin-bottom: 0;
+}
+
+body {
+    font-size: .75rem;
+}
+
+.dropdown-toggle {
+    font-size: 1rem;
+}
+
+.spinner-border {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    margin-top: -1rem;
+    margin-left: -1rem;
+    visibility: hidden;
+}
+
+h6 {
+    margin-bottom: .1rem;
+    font-size: .9rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.content-img {
+    width: 5rem;
+}
+
+.row-detail h6 {
+    text-overflow: ellipsis;
+}
+
+.row-detail {
+    padding: .5rem 0 .5rem 1rem !important;
+}
+
+.row-image {
+    width: 5rem;
+    padding: .5rem 0 .5rem 0 !important;
+    vertical-align: middle !important;
+}
+
+.song-info {
+    margin-left: 1rem;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.table-responsive {
+    margin-top: .75rem;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.navbar {
+    margin-bottom: .75rem;
+}
+
+.search-bar {
+    background-color: white;
+}
+
+.search-results {
+    margin-top: 1rem;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#success-alert {
+    width: 100%;
+    margin-top: .3rem;
+    margin-bottom: 0;
+    font-size: 1rem;
+    display: none;
+}
+
+.explicit-img {
+    display: inline-block;
+    margin-left: .3rem;
+}
